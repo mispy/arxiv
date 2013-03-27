@@ -1,6 +1,7 @@
 require 'open-uri'
 require 'nokogiri'
 require 'happymapper'
+require 'cgi'
 
 require 'arxiv/version'
 require 'arxiv/string_scrubber'
@@ -31,19 +32,23 @@ module Arxiv
   ID_FORMAT = /^#{CURRENT_URL_FORMAT}/
 
   def self.get(identifier)
-
     id = parse_arxiv_identifier(identifier)
 
     unless id =~ ID_FORMAT || id =~ LEGACY_ID_FORMAT
       raise Arxiv::Error::MalformedId, "Manuscript ID format is invalid"
     end
 
-    url = ::URI.parse("http://export.arxiv.org/api/query?id_list=#{id}")
-    response = ::Nokogiri::XML(open(url)).remove_namespaces!
-    manuscript = Arxiv::Manuscript.parse(response.to_s, single: id)
+    manuscripts = query(:id_list => id)
 
-    raise Arxiv::Error::ManuscriptNotFound, "Manuscript #{id} doesn't exist on arXiv" if manuscript.title.nil?
-    manuscript
+    raise Arxiv::Error::ManuscriptNotFound, "Manuscript #{id} doesn't exist on arXiv" if manuscripts.length == 0
+    manuscripts[0]
+  end
+
+  def self.query(params)
+    paramstr = params.collect { |k,v| "#{k}=#{::CGI::escape(v.to_s)}" }.join('&')
+    url = ::URI.parse("http://export.arxiv.org/api/query?#{paramstr}")
+    response = ::Nokogiri::XML(open(url)).remove_namespaces!
+    Arxiv::Manuscript.parse(response.to_s).reject { |m| m.title.nil? }
   end
 
   private
@@ -70,10 +75,4 @@ module Arxiv
   def self.legacy_url?(identifier)
     identifier =~ LEGACY_URL_FORMAT
   end
-
-
-
-
-
-
 end

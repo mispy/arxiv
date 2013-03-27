@@ -8,3 +8,6 @@ tmtags
 
 # Mac OSX hidden files
 .DS_Store
+
+# Vim
+.*.swp
