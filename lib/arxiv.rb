@@ -2,6 +2,7 @@ require 'open-uri'
 require 'nokogiri'
 require 'happymapper'
 require 'cgi'
+require 'oai'
 
 require 'arxiv/version'
 require 'arxiv/string_scrubber'
@@ -54,6 +55,36 @@ module Arxiv
     url = ::URI.parse("http://export.arxiv.org/api/query?#{paramstr}")
     response = ::Nokogiri::XML(open(url)).remove_namespaces!
     Arxiv::Manuscript.parse(response.to_s).reject { |m| m.title.nil? }
+  end
+
+  def self.archive(savedir, last_token=nil)
+    oai = OAI::Client.new 'http://export.arxiv.org/oai2'
+
+    if last_token?
+      resp = oai.list_records(resumptionToken: last_token)
+    else
+      resp = oai.list_records(metadataPrefix: "arXiv")
+    end
+
+    while true
+      last_token = resp.resumption_token || last_token
+      p resp
+      $resp = resp
+      if resp.resumption_token
+        f = File.open("#{savedir}/#{resp.resumption_token}", 'w')
+        f.write(resp.doc.to_s)
+        f.close
+
+        sleep 5
+        resp = oai.list_records(resumptionToken: resp.resumption_token)
+      elsif resp.doc.to_s.include?("Retry after 20 seconds")
+        puts "Sleeping for 20 seconds..."
+        sleep 20
+        resp = oai.list_records(resumptionToken: last_token)
+      else
+        break
+      end
+    end
   end
 
   private
