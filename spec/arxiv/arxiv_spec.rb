@@ -45,4 +45,11 @@ module Arxiv
 
   end
 
+  describe "search" do
+    it "should retrieve an array of manuscripts" do
+      manuscripts = Arxiv.search('Quantum de Finetti Theorems under Local Measurements with Applications')
+      manuscripts[0].title.should eq('Quantum de Finetti Theorems under Local Measurements with Applications')
+    end
+  end
+
 end

@@ -44,6 +44,11 @@ module Arxiv
     manuscripts[0]
   end
 
+  def self.search(search_query, params={})
+    params[:search_query] = 'all:'+search_query
+    self.query(params)
+  end
+
   def self.query(params)
     paramstr = params.collect { |k,v| "#{k}=#{::CGI::escape(v.to_s)}" }.join('&')
     url = ::URI.parse("http://export.arxiv.org/api/query?#{paramstr}")
