@@ -24,5 +24,6 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency "oai"
 
   s.add_development_dependency "rspec"
+  s.add_development_dependency "pry"
 
 end
