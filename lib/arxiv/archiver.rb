@@ -18,6 +18,7 @@ module Arxiv
           else # No resumption_token and no retry should mean we're finished
             save_response(resp)
             puts "Finished archiving!"
+            break
           end
         else # We have a resumption_token, keep going!
           save_response(resp)
