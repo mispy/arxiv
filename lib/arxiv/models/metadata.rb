@@ -9,8 +9,12 @@ module Arxiv
     element :title, StringScrubber, parser: :scrub
     element :abstract, StringScrubber, parser: :scrub
     element :comments, StringScrubber, parser: :scrub
-    has_many :categories, Category
+    element :raw_categories, String, tag: 'categories'
     has_many :authors, Author
+
+    def categories
+      raw_categories.split
+    end
 
     def primary_category
       categories[0]
