@@ -1,4 +1,18 @@
 module Arxiv
+  def self.archive(*args)
+    Arxiv::Archiver.new(*args).start
+  end
+
+  def self.read_archive(savedir, &b)
+    Dir.glob(File.join(savedir, '*')).each do |path|
+      xml = Nokogiri::XML(File.read(path)).remove_namespaces!.to_s
+      Arxiv::Metadata.parse(xml).each do |metadata|
+        next if metadata.title.nil?
+        yield metadata
+      end
+    end
+  end
+
   class Archiver
     def initialize(savedir, custom_params=nil)
       @savedir = savedir

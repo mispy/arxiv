@@ -12,6 +12,7 @@ require 'arxiv/models/author'
 require 'arxiv/models/link'
 require 'arxiv/models/category'
 require 'arxiv/models/manuscript'
+require 'arxiv/models/metadata'
 
 module Arxiv
 
@@ -56,10 +57,6 @@ module Arxiv
     url = ::URI.parse("http://export.arxiv.org/api/query?#{paramstr}")
     response = ::Nokogiri::XML(open(url)).remove_namespaces!
     Arxiv::Manuscript.parse(response.to_s).reject { |m| m.title.nil? }
-  end
-
-  def self.archive(*args)
-    Arxiv::Archiver.new(*args).start
   end
 
   private
