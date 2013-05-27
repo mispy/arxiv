@@ -44,10 +44,10 @@ module Arxiv
     end
 
     def save_response(resp)
-      # Saves an OAI XML response to disk, using the resumption_token
-      # as filename if available, else an MD5 hash of content
+      # Saves a timestamped OAI XML response to disk, appending
+      # the resumption token to the filename if available
       content = resp.doc.to_s
-      filename = resp.resumption_token || Digest::MD5.hexdigest(content)
+      filename = "#{DateTime.now.to_s}_#{resp.resumption_token || 'final'}"
       puts filename
       f = File.open("#{@savedir}/#{filename}", 'w')
       f.write(content)
